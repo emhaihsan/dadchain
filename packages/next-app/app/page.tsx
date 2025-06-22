@@ -1,25 +1,18 @@
 import { Header } from "@/components/header";
-import { JokeSubmissionForm } from "@/components/joke-submission-form";
 import { TimelineFeed } from "@/components/timeline-feed";
 import { StatsOverview } from "@/components/stats-overview";
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome to DadChain
-          </h1>
-          <p className="text-lg text-gray-600">
-            The world's first fully decentralized dad joke platform
-          </p>
+      <main className="container mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 py-10 lg:grid-cols-3">
+        <div className="space-y-8 lg:col-span-2">
+          <TimelineFeed />
         </div>
-
-        <StatsOverview />
-        <JokeSubmissionForm />
-        <TimelineFeed />
+        <aside className="space-y-8">
+          <StatsOverview />
+        </aside>
       </main>
     </div>
   );

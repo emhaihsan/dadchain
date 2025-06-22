@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy, User, Home } from "lucide-react";
+import { Trophy, Home, PlusCircle } from "lucide-react";
 import { ConnectWalletButton } from "./ConnectWalletButton";
 import { useAccount } from "wagmi";
+import { Button } from "./ui/button";
 
 export function Header() {
   const { isConnected } = useAccount();
@@ -24,34 +25,35 @@ export function Header() {
 
           {/* Centered Navigation with Absolute Positioning */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="hidden md:flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
+                className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
               >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
+                Home
               </Link>
+
               <Link
-                href="/leaderboard"
-                className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
-              >
-                <Trophy className="w-4 h-4" />
-                <span>Leaderboard</span>
-              </Link>
-              <Link
-                href={isConnected ? "/profile" : "#"}
-                className={`flex items-center space-x-1 transition-colors ${
-                  isConnected
-                    ? "text-gray-600 hover:text-orange-600"
-                    : "text-gray-400 pointer-events-none"
-                }`}
+                href={isConnected ? "/submit" : "#"}
+                passHref
                 aria-disabled={!isConnected}
                 tabIndex={!isConnected ? -1 : undefined}
-                suppressHydrationWarning
               >
-                <User className="w-4 h-4" />
-                <span>Profile</span>
+                <Button
+                  size="lg"
+                  className="rounded-full font-bold shadow-lg bg-orange-500 hover:bg-orange-600 text-white transition-all duration-300 transform hover:scale-105"
+                  disabled={!isConnected}
+                >
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Submit a Joke
+                </Button>
+              </Link>
+
+              <Link
+                href="/leaderboard"
+                className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+              >
+                Leaderboard
               </Link>
             </nav>
           </div>

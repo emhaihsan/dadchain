@@ -105,7 +105,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
       <Header />
       <main className="container mx-auto max-w-5xl px-4 py-10">
         {/* Profile Header Card */}
