@@ -2,7 +2,7 @@
 
 import React from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { mainnet, sepolia, lineaSepolia, polygonAmoy } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { metaMask } from "wagmi/connectors";
 
@@ -11,11 +11,13 @@ const queryClient = new QueryClient();
 
 // 2. Create a Wagmi config
 export const config = createConfig({
-  chains: [mainnet, sepolia],
+  chains: [mainnet, sepolia, lineaSepolia, polygonAmoy],
   connectors: [metaMask()],
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
+    [lineaSepolia.id]: http(),
+    [polygonAmoy.id]: http(),
   },
 });
 
