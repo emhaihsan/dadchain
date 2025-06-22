@@ -1,0 +1,61 @@
+# =================================
+# GLOBAL / WORKSPACE-LEVEL
+# =================================
+# Dependency directories. The double-star (**) ensures this applies to
+# the root and any subdirectory (e.g., packages/next-app/node_modules).
+**/node_modules
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables. Never commit secrets!
+# It's a good practice to commit a template file.
+.env
+.env.*
+!.env.example
+
+# IDE / Editor specific settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+
+
+# =================================
+# NEXT.JS (in packages/next-app)
+# =================================
+# Next.js build output
+packages/next-app/.next/
+packages/next-app/out/
+
+# Vercel deployment folder
+.vercel
+
+# TypeScript build info
+packages/next-app/*.tsbuildinfo
+packages/next-app/next-env.d.ts
+
+
+# =================================
+# FOUNDRY (in packages/contracts)
+# =================================
+# Build artifacts & cache
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/
+
+# Foundry dependencies (submodules)
+packages/contracts/lib/
+
+# Anvil state file
+packages/contracts/anvil.json
+
+# Coverage reports
+coverage/
+coverage.json
+
+ideation.md
