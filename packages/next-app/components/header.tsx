@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Wallet, Trophy, User, Home } from "lucide-react";
+import { Trophy, User, Home } from "lucide-react";
 import { ConnectWalletButton } from "./ConnectWalletButton";
 import { useAccount } from "wagmi";
 
@@ -13,8 +11,8 @@ export function Header() {
 
   return (
     <header className="bg-white border-b border-orange-200 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-4">
+        <div className="relative flex h-24 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src="/dadchain.png"
@@ -24,33 +22,41 @@ export function Header() {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/"
-              className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
-            >
-              <Home className="w-4 h-4" />
-              <span>Home</span>
-            </Link>
-            <Link
-              href="/leaderboard"
-              className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
-            >
-              <Trophy className="w-4 h-4" />
-              <span>Leaderboard</span>
-            </Link>
-            {isConnected && (
+          {/* Centered Navigation with Absolute Positioning */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <nav className="hidden md:flex items-center space-x-6">
               <Link
-                href="/profile"
+                href="/"
                 className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
+              >
+                <Home className="w-4 h-4" />
+                <span>Home</span>
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="flex items-center space-x-1 text-gray-600 hover:text-orange-600"
+              >
+                <Trophy className="w-4 h-4" />
+                <span>Leaderboard</span>
+              </Link>
+              <Link
+                href={isConnected ? "/profile" : "#"}
+                className={`flex items-center space-x-1 transition-colors ${
+                  isConnected
+                    ? "text-gray-600 hover:text-orange-600"
+                    : "text-gray-400 pointer-events-none"
+                }`}
+                aria-disabled={!isConnected}
+                tabIndex={!isConnected ? -1 : undefined}
+                suppressHydrationWarning
               >
                 <User className="w-4 h-4" />
                 <span>Profile</span>
               </Link>
-            )}
-          </nav>
+            </nav>
+          </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <ConnectWalletButton />
           </div>
         </div>

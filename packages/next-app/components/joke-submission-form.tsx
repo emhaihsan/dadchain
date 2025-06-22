@@ -1,77 +1,118 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Send, ImagePlus, X } from "lucide-react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Send } from "lucide-react"
+const MAX_JOKE_LENGTH = 280;
 
 export function JokeSubmissionForm() {
-  const [joke, setJoke] = useState("")
-  const [image, setImage] = useState<File | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [joke, setJoke] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setPreviewUrl(objectUrl);
+
+    // Cleanup function to revoke the object URL
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [imageFile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!joke.trim()) return
+    e.preventDefault();
+    if (!joke.trim()) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Mock submission process
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    setJoke("");
+    setImageFile(null);
+    setIsSubmitting(false);
 
-    setJoke("")
-    setImage(null)
-    setIsSubmitting(false)
-
-    // Show success message (in real app, would show transaction hash)
-    alert("Joke submitted to blockchain! 🎉")
-  }
+    alert("Joke submitted to blockchain! ");
+  };
 
   return (
-    <Card className="mb-8 border-orange-200">
+    <Card className="mb-8 border-orange-100 shadow-sm transition-shadow hover:shadow-md">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span>📝</span>
-          <span>Share Your Dad Joke</span>
+        <CardTitle className="text-lg font-semibold text-gray-800">
+          Tell a Dad Joke
         </CardTitle>
+        <CardDescription>
+          The funnier the joke, the better the rewards!
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="joke">Your Dad Joke</Label>
+          <div className="relative">
             <Textarea
-              id="joke"
-              placeholder="Why don't scientists trust atoms? Because they make up everything!"
+              placeholder="What's the best time to go to the dentist? Tooth-hurty!"
               value={joke}
               onChange={(e) => setJoke(e.target.value)}
-              className="min-h-[100px] resize-none"
-              maxLength={280}
+              className="min-h-[100px] pr-10"
+              maxLength={MAX_JOKE_LENGTH}
+              required
             />
-            <div className="text-sm text-gray-500 mt-1">{joke.length}/280 characters</div>
-          </div>
-
-          <div>
-            <Label htmlFor="image">Optional Image (stored on IPFS)</Label>
-            <div className="mt-1">
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files?.[0] || null)}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-              />
+            <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+              {joke.length} / {MAX_JOKE_LENGTH}
             </div>
           </div>
+
+          {previewUrl ? (
+            <div className="relative w-fit">
+              <Image
+                src={previewUrl}
+                alt="Image preview"
+                width={100}
+                height={100}
+                className="rounded-md object-cover"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                onClick={() => setImageFile(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <label className="flex w-full cursor-pointer items-center space-x-2 rounded-md border-2 border-dashed border-gray-300 p-4 text-center text-gray-500 hover:bg-gray-50">
+              <ImagePlus className="h-5 w-5" />
+              <span>Add an image (optional)</span>
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  setImageFile(e.target.files ? e.target.files[0] : null)
+                }
+              />
+            </label>
+          )}
 
           <Button
             type="submit"
             disabled={!joke.trim() || isSubmitting}
-            className="w-full bg-orange-600 hover:bg-orange-700"
+            className="w-full bg-orange-600 hover:bg-orange-700 transition-all duration-300 transform hover:scale-105"
           >
             {isSubmitting ? (
               <>
@@ -81,12 +122,12 @@ export function JokeSubmissionForm() {
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                Submit Joke (Gas: ~0.001 ETH)
+                Submit Joke
               </>
             )}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
