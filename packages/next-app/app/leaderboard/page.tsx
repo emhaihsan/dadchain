@@ -1,9 +1,14 @@
-import { Header } from "@/components/header"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Trophy, Medal, Award } from "lucide-react"
+"use client";
 
-const leaderboardData = [
+import { useState } from "react";
+import { Header } from "@/components/header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Medal, Award } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Mock data for different time ranges
+const allTimeData = [
   {
     rank: 1,
     address: "0x742d35Cc6634C0532925a3b8D404d3aABb8c4532",
@@ -31,75 +36,165 @@ const leaderboardData = [
     tips: 445.8,
     badges: ["Consistent Creator", "Community Favorite"],
   },
-]
+];
+
+const monthlyData = [
+  {
+    rank: 1,
+    address: "0x8ba1f109551bD432803012645Hac136c30C6213",
+    dadScore: 980,
+    jokes: 40,
+    likes: 1005,
+    tips: 250.0,
+    badges: ["Monthly Top Punner"],
+  },
+  {
+    rank: 2,
+    address: "0x742d35Cc6634C0532925a3b8D404d3aABb8c4532",
+    dadScore: 850,
+    jokes: 35,
+    likes: 940,
+    tips: 210.5,
+    badges: ["Hot Streak"],
+  },
+];
+
+const weeklyData = [
+  {
+    rank: 1,
+    address: "0x1234567890abcdef1234567890abcdef12345678",
+    dadScore: 310,
+    jokes: 12,
+    likes: 400,
+    tips: 95.0,
+    badges: ["Weekly Winner"],
+  },
+  {
+    rank: 2,
+    address: "0x742d35Cc6634C0532925a3b8D404d3aABb8c4532",
+    dadScore: 290,
+    jokes: 10,
+    likes: 350,
+    tips: 80.0,
+    badges: [],
+  },
+];
+
+const leaderboardTabs = [
+  { value: "weekly", label: "Weekly", data: weeklyData },
+  { value: "monthly", label: "Monthly", data: monthlyData },
+  { value: "allTime", label: "All-Time", data: allTimeData },
+];
 
 export default function LeaderboardPage() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-6 h-6 text-yellow-500" />
+        return <Trophy className="w-6 h-6 text-yellow-500" />;
       case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />
+        return <Medal className="w-6 h-6 text-gray-400" />;
       case 3:
-        return <Award className="w-6 h-6 text-orange-600" />
+        return <Award className="w-6 h-6 text-orange-600" />;
       default:
-        return <div className="w-6 h-6 flex items-center justify-center text-gray-500 font-bold">{rank}</div>
+        return (
+          <div className="w-6 h-6 flex items-center justify-center text-gray-500 font-bold">
+            {rank}
+          </div>
+        );
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
       <Header />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Dad Score Leaderboard 🏆</h1>
-          <p className="text-lg text-gray-600">Top performers in the DadChain ecosystem</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Dad Score Leaderboard 🏆
+          </h1>
+          <p className="text-lg text-gray-600">
+            Top performers in the DadChain ecosystem
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {leaderboardData.map((user) => (
-            <Card key={user.address} className="border-orange-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">{getRankIcon(user.rank)}</div>
+        <Tabs defaultValue="allTime" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            {leaderboardTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-mono text-sm text-gray-600">
-                        {user.address.slice(0, 10)}...{user.address.slice(-8)}
+          {leaderboardTabs.map((tab) => (
+            <TabsContent
+              key={tab.value}
+              value={tab.value}
+              className="space-y-4"
+            >
+              {tab.data.map((user) => (
+                <Card
+                  key={user.address}
+                  className="border-orange-200 hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        {getRankIcon(user.rank)}
                       </div>
-                      <div className="text-2xl font-bold text-orange-600">{user.dadScore.toLocaleString()} pts</div>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-4 mb-3">
-                      <div className="text-center">
-                        <div className="font-semibold text-gray-900">{user.jokes}</div>
-                        <div className="text-xs text-gray-500">Jokes</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-semibold text-gray-900">{user.likes.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">Likes</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-semibold text-gray-900">${user.tips}</div>
-                        <div className="text-xs text-gray-500">Tips</div>
-                      </div>
-                    </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-mono text-sm text-gray-600">
+                            {user.address.slice(0, 10)}...
+                            {user.address.slice(-8)}
+                          </div>
+                          <div className="text-2xl font-bold text-orange-600">
+                            {user.dadScore.toLocaleString()} pts
+                          </div>
+                        </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {user.badges.map((badge) => (
-                        <Badge key={badge} variant="secondary" className="bg-orange-100 text-orange-700">
-                          {badge}
-                        </Badge>
-                      ))}
+                        <div className="grid grid-cols-3 gap-4 mb-3">
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-900">
+                              {user.jokes}
+                            </div>
+                            <div className="text-xs text-gray-500">Jokes</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-900">
+                              {user.likes.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-500">Likes</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-semibold text-gray-900">
+                              ${user.tips}
+                            </div>
+                            <div className="text-xs text-gray-500">Tips</div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {user.badges.map((badge) => (
+                            <Badge
+                              key={badge}
+                              variant="secondary"
+                              className="bg-orange-100 text-orange-700"
+                            >
+                              {badge}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       </main>
     </div>
-  )
+  );
 }
