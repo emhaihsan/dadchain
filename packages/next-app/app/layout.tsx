@@ -14,7 +14,9 @@ export const metadata: Metadata = {
   description:
     "The world's first decentralized dad joke platform where puns build your on-chain reputation.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/dadchain.ico",
+    shortcut: "/dadchain.png",
+    apple: "/dadchain.png",
   },
 };
 
