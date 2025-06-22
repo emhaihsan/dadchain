@@ -24,6 +24,7 @@ import {
   Trophy,
   Star,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 // Mock data - in a real app, this would be fetched based on the user's address
 const userProfile = {
@@ -104,128 +105,152 @@ export default function ProfilePage() {
     return null; // Render nothing while redirecting or if not connected
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
       <Header />
-      <main className="container mx-auto max-w-5xl px-4 py-10">
+      <motion.main
+        className="container mx-auto max-w-5xl px-4 py-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Profile Header Card */}
-        <Card className="mb-8 overflow-hidden border-orange-100">
-          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 h-24" />
-          <div className="p-6 pt-0">
-            <div className="flex items-end -mt-12">
-              <div className="p-1 bg-gray-50 rounded-full">
-                <Identicon address={address} size={96} />
-              </div>
-              <div className="ml-4 flex-grow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                      {address.slice(0, 6)}...{address.slice(-4)}
-                    </h1>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={copyAddress}
-                      title="Copy address"
-                    >
-                      <Copy className="h-4 w-4 text-gray-500 hover:text-orange-600" />
-                    </Button>
-                  </div>
+        <motion.div variants={itemVariants}>
+          <Card className="mb-8 overflow-hidden border-orange-100">
+            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 h-24" />
+            <div className="p-6 pt-0">
+              <div className="flex items-end -mt-12">
+                <div className="p-1 bg-gray-50 rounded-full">
+                  <Identicon address={address} size={96} />
                 </div>
-                <p className="text-sm text-gray-500">Verified Dad</p>
+                <div className="ml-4 flex-grow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800">
+                        {address.slice(0, 6)}...{address.slice(-4)}
+                      </h1>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={copyAddress}
+                        title="Copy address"
+                      >
+                        <Copy className="h-4 w-4 text-gray-500 hover:text-orange-600" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500">Verified Dad</p>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-              <div className="p-4 bg-orange-50 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">
-                  {userProfile.totalJokes}
-                </p>
-                <p className="text-sm text-muted-foreground">Jokes Submitted</p>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg">
-                <p className="text-2xl font-bold text-red-600">
-                  {userProfile.totalLikes.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Likes</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">
-                  ${userProfile.totalTips.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Tips Earned</p>
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <p className="text-2xl font-bold text-orange-600">
+                    {userProfile.totalJokes}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Jokes Submitted
+                  </p>
+                </div>
+                <div className="p-4 bg-red-50 rounded-lg">
+                  <p className="text-2xl font-bold text-red-600">
+                    {userProfile.totalLikes.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Total Likes</p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600">
+                    ${userProfile.totalTips.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Tips Earned</p>
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
 
         {/* Tabs for Jokes and Badges */}
-        <Tabs defaultValue="jokes" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-orange-100/50">
-            <TabsTrigger value="jokes">My Jokes</TabsTrigger>
-            <TabsTrigger value="badges">NFT Badges</TabsTrigger>
-          </TabsList>
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="jokes" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-orange-100/50">
+              <TabsTrigger value="jokes">My Jokes</TabsTrigger>
+              <TabsTrigger value="badges">NFT Badges</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="jokes" className="mt-6 space-y-4">
-            {userProfile.jokes.map((joke) => (
-              <Card key={joke.id} className="border-orange-100 shadow-sm">
-                <CardContent className="p-4 flex justify-between items-center">
-                  <p className="text-gray-800 flex-grow pr-4">{joke.text}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500 flex-shrink-0">
-                    <span className="flex items-center">
-                      <Heart className="w-4 h-4 mr-1 text-red-400" />{" "}
-                      {joke.likes}
-                    </span>
-                    <span className="flex items-center">
-                      <MessageSquare className="w-4 h-4 mr-1 text-blue-400" />{" "}
-                      {joke.comments}
-                    </span>
-                    <span className="flex items-center">
-                      <DollarSign className="w-4 h-4 mr-1 text-green-400" /> $
-                      {joke.tips}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="badges" className="mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {userProfile.nftBadges.map((badge) => (
-                <Card
-                  key={badge.name}
-                  className={`border-2 ${
-                    rarityStyles[badge.rarity]
-                  } transition-transform hover:-translate-y-1`}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div
-                      className={`mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white mb-3`}
-                    >
-                      <badge.icon
-                        className={`h-8 w-8 ${
-                          rarityStyles[badge.rarity].split(" ")[2]
-                        }`}
-                      />
+            <TabsContent value="jokes" className="mt-6 space-y-4">
+              {userProfile.jokes.map((joke) => (
+                <Card key={joke.id} className="border-orange-100 shadow-sm">
+                  <CardContent className="p-4 flex justify-between items-center">
+                    <p className="text-gray-800 flex-grow pr-4">{joke.text}</p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500 flex-shrink-0">
+                      <span className="flex items-center">
+                        <Heart className="w-4 h-4 mr-1 text-red-400" />{" "}
+                        {joke.likes}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageSquare className="w-4 h-4 mr-1 text-blue-400" />{" "}
+                        {joke.comments}
+                      </span>
+                      <span className="flex items-center">
+                        <DollarSign className="w-4 h-4 mr-1 text-green-400" /> $
+                        {joke.tips}
+                      </span>
                     </div>
-                    <h3 className="font-bold text-lg mb-1">{badge.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {badge.description}
-                    </p>
-                    <Badge
-                      variant="outline"
-                      className={rarityStyles[badge.rarity]}
-                    >
-                      {badge.rarity}
-                    </Badge>
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </main>
+            </TabsContent>
+
+            <TabsContent value="badges" className="mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {userProfile.nftBadges.map((badge) => (
+                  <Card
+                    key={badge.name}
+                    className={`border-2 ${
+                      rarityStyles[badge.rarity]
+                    } transition-transform hover:-translate-y-1`}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div
+                        className={`mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white mb-3`}
+                      >
+                        <badge.icon
+                          className={`h-8 w-8 ${
+                            rarityStyles[badge.rarity].split(" ")[2]
+                          }`}
+                        />
+                      </div>
+                      <h3 className="font-bold text-lg mb-1">{badge.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {badge.description}
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className={rarityStyles[badge.rarity]}
+                      >
+                        {badge.rarity}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </motion.main>
     </div>
   );
 }

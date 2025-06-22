@@ -32,7 +32,7 @@ export default function RootLayout({
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable
         )}
-        suppressHydrationWarning
+        suppressHydrationWarning={true}
       >
         <Web3Provider>{children}</Web3Provider>
       </body>

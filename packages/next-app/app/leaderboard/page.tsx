@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { Identicon } from "@/components/identicon";
 import { Trophy, Medal, Award } from "lucide-react";
+import { StatsOverview } from "@/components/stats-overview";
+import { motion } from "framer-motion";
 
 // Mock data for different time ranges
 const allTimeData = [
@@ -175,38 +177,65 @@ function LeaderboardTable({
   );
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.2 },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+};
+
 export default function LeaderboardPage() {
   const { address } = useAccount();
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="container mx-auto max-w-5xl px-4 py-10">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Hall of Dads
+      <motion.main
+        className="container mx-auto max-w-5xl px-4 py-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="text-center mb-12" variants={itemVariants}>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            DadChain Leaderboard
           </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            The official ranking of the most legendary dads on the chain.
+          <p className="mt-3 text-lg text-gray-600">
+            See who's the top pop on the blockchain.
           </p>
-        </div>
+        </motion.div>
 
-        <Tabs defaultValue="allTime" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-orange-100/50 mb-6">
+        <motion.div className="mb-12" variants={itemVariants}>
+          <StatsOverview />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="allTime" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-orange-100/50 mb-6">
+              {leaderboardTabs.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
             {leaderboardTabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
+              <TabsContent key={tab.value} value={tab.value}>
+                <LeaderboardTable
+                  data={tab.data}
+                  currentUserAddress={address}
+                />
+              </TabsContent>
             ))}
-          </TabsList>
-
-          {leaderboardTabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-              <LeaderboardTable data={tab.data} currentUserAddress={address} />
-            </TabsContent>
-          ))}
-        </Tabs>
-      </main>
+          </Tabs>
+        </motion.div>
+      </motion.main>
     </div>
   );
 }
