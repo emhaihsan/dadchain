@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import {
@@ -85,10 +85,12 @@ const rarityStyles: { [key: string]: string } = {
 };
 
 export default function ProfilePage() {
-  const { address, isConnected } = useAccount();
   const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
     if (!isConnected) {
       router.push("/");
     }
@@ -96,13 +98,13 @@ export default function ProfilePage() {
 
   const copyAddress = () => {
     if (address) {
-      navigator.clipboard.writeText(address);
+      navigator.clipboard.writeText(address as string);
       alert("Address copied!");
     }
   };
 
-  if (!isConnected || !address) {
-    return null; // Render nothing while redirecting or if not connected
+  if (!hasMounted || !isConnected || !address) {
+    return null; // Render nothing while redirecting or if not connected/mounted
   }
 
   const containerVariants = {
