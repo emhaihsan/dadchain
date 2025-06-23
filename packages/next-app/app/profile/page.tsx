@@ -87,10 +87,8 @@ const rarityStyles: { [key: string]: string } = {
 export default function ProfilePage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
-  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
     if (!isConnected) {
       router.push("/");
     }
@@ -103,8 +101,9 @@ export default function ProfilePage() {
     }
   };
 
-  if (!hasMounted || !isConnected || !address) {
-    return null; // Render nothing while redirecting or if not connected/mounted
+  // Redirect jika tidak terhubung
+  if (!isConnected || !address) {
+    return null;
   }
 
   const containerVariants = {

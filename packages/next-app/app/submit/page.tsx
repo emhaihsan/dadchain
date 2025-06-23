@@ -2,11 +2,11 @@
 
 import { useAccount } from "wagmi";
 import { Header } from "@/components/header";
-import { JokeSubmissionForm } from "@/components/joke-submission-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { motion } from "framer-motion";
+import { JokeSubmissionForm } from "@/components/joke-submission-form";
 
 export default function SubmitJokePage() {
   const { isConnected } = useAccount();
@@ -23,17 +23,17 @@ export default function SubmitJokePage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center text-gray-800">
-              Submit Your Best Dad Joke
+              Submit a Dad Joke
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             {isConnected ? (
               <JokeSubmissionForm />
             ) : (
-              <div className="text-center space-y-4 py-8">
-                <p className="text-lg text-gray-600">
-                  Please connect your wallet to submit a joke.
-                </p>
+              <div className="text-center py-8">
+                <div className="mb-4 text-gray-600">
+                  Connect your wallet to submit a joke
+                </div>
                 <ConnectWalletButton />
               </div>
             )}

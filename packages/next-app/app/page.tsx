@@ -30,32 +30,36 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <motion.main
-        className="container mx-auto max-w-3xl px-4 py-10"
+      <motion.div
+        className="container mx-auto max-w-4xl px-4 py-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants}>
-          <TimelineFeed />
-        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="md:col-span-2" variants={itemVariants}>
+            <TimelineFeed />
+          </motion.div>
 
-        <motion.div className="mt-16" variants={itemVariants}>
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <div className="flex items-center mb-3">
-              <Info className="h-6 w-6 text-orange-500 mr-3" />
-              <h3 className="text-xl font-bold text-gray-900">
+          <motion.div variants={itemVariants}>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <Info className="mr-2 h-5 w-5" />
                 About DadChain
-              </h3>
+              </h2>
+              <p className="text-gray-600 mb-4">
+                DadChain is the first decentralized platform for dad jokes on
+                the blockchain. Submit your best dad jokes, earn likes, and get
+                tipped in crypto!
+              </p>
+              <p className="text-gray-600">
+                Connect your wallet to submit jokes and participate in the
+                community.
+              </p>
             </div>
-            <p className="text-gray-600 leading-relaxed">
-              The world's first decentralized platform for sharing, rating, and
-              monetizing the punniest dad jokes. The best jokes are decided by
-              the community.
-            </p>
-          </div>
-        </motion.div>
-      </motion.main>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 }

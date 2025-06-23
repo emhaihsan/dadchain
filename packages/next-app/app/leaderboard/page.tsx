@@ -179,15 +179,6 @@ function LeaderboardTable({
 
 function LeaderboardPage() {
   const { address } = useAccount();
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) {
-    return null;
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
