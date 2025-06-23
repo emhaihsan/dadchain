@@ -9,13 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Heart,
-  MessageSquare,
-  DollarSign,
-  ExternalLink,
-  Copy,
-} from "lucide-react";
+import { Heart, DollarSign, ExternalLink, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Identicon } from "./identicon";
 
@@ -27,7 +21,6 @@ const mockJokes = [
     creator: "0x742d35Cc6634C0532925a3b8D404d3aABb8c4532",
     likes: 42,
     tips: 15.5,
-    comments: 7,
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     txHash: "0xabc123...",
     image: null,
@@ -38,7 +31,6 @@ const mockJokes = [
     creator: "0x8ba1f109551bD432803012645Hac136c30C6213",
     likes: 38,
     tips: 8.2,
-    comments: 4,
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
     txHash: "0xdef456...",
     image: null,
@@ -49,7 +41,6 @@ const mockJokes = [
     creator: "0x1234567890abcdef1234567890abcdef12345678",
     likes: 67,
     tips: 23.1,
-    comments: 12,
     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
     txHash: "0x789ghi...",
     image: null,
@@ -155,10 +146,6 @@ export function TimelineFeed() {
                 <span className="text-sm font-medium">
                   {joke.likes + (likedJokes.has(joke.id) ? 1 : 0)}
                 </span>
-              </button>
-              <button className="flex items-center space-x-1.5 hover:text-blue-500 transition-colors">
-                <MessageSquare className="w-5 h-5" />
-                <span className="text-sm font-medium">{joke.comments}</span>
               </button>
             </div>
             <Button
