@@ -43,10 +43,13 @@ packages/next-app/next-env.d.ts
 # =================================
 # FOUNDRY (in packages/contracts)
 # =================================
+/broadcast/
+packages/contracts/broadcast/
 # Build artifacts & cache
 packages/contracts/out/
 packages/contracts/cache/
 packages/contracts/broadcast/
+packages/contracts/artifacts/
 
 # Foundry dependencies (submodules)
 packages/contracts/lib/
@@ -59,3 +62,20 @@ coverage/
 coverage.json
 
 ideation.md
+
+# =================================
+# Hardhat (default)
+# =================================
+# Hardhat artifacts and cache
+packages/contracts/artifacts/
+cache/
+typechain/
+typechain-types/
+build/
+*.tsbuildinfo
+
+# Local Hardhat node database
+node_modules/.cache/hardhat-nodejs
+
+# Hardhat network persistent state
+hardhat-network-*

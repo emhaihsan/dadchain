@@ -81,14 +81,16 @@ describe("DadChain Platform", function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
       const jokeContent =
         "Why did the scarecrow win an award? Because he was outstanding in his field!";
+      const imageURI = "ipfs://test-image-uri";
 
-      await expect(core.connect(user1).submitJoke(jokeContent))
+      await expect(core.connect(user1).submitJoke(jokeContent, imageURI))
         .to.emit(core, "JokeSubmitted")
-        .withArgs(1, user1.address, jokeContent);
+        .withArgs(1, user1.address, jokeContent, imageURI);
 
       const joke = await core.jokes(1);
       expect(joke.creator).to.equal(user1.address);
       expect(joke.content).to.equal(jokeContent);
+      expect(joke.imageURI).to.equal(imageURI);
       expect(await core.totalJokes()).to.equal(1);
 
       const userProfile = await core.getUserProfile(user1.address);
@@ -100,21 +102,29 @@ describe("DadChain Platform", function () {
       expect(await core.totalUsers()).to.equal(0);
 
       // First interaction for user1
-      await core.connect(user1).submitJoke("First joke");
+      await core
+        .connect(user1)
+        .submitJoke("First joke", "ipfs://first-joke-uri");
       expect(await core.totalUsers()).to.equal(1);
 
       // Second interaction for user1, should not increment totalUsers
-      await core.connect(user1).submitJoke("Second joke");
+      await core
+        .connect(user1)
+        .submitJoke("Second joke", "ipfs://second-joke-uri");
       expect(await core.totalUsers()).to.equal(1);
 
       // First interaction for user2
-      await core.connect(user2).submitJoke("User 2's joke");
+      await core
+        .connect(user2)
+        .submitJoke("User 2's joke", "ipfs://user2-joke-uri");
       expect(await core.totalUsers()).to.equal(2);
     });
 
     it("Should allow a user to like a joke", async function () {
       const { core, user1, user2 } = await loadFixture(deployContractsFixture);
-      await core.connect(user1).submitJoke("A joke to be liked");
+      await core
+        .connect(user1)
+        .submitJoke("A joke to be liked", "ipfs://like-joke-uri");
 
       await expect(core.connect(user2).likeJoke(1))
         .to.emit(core, "JokeLiked")
@@ -129,7 +139,7 @@ describe("DadChain Platform", function () {
 
     it("Should prevent a user from liking their own joke", async function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
-      await core.connect(user1).submitJoke("A joke");
+      await core.connect(user1).submitJoke("A joke", "ipfs://own-joke-uri");
       await expect(core.connect(user1).likeJoke(1)).to.be.revertedWith(
         "Cannot like your own joke"
       );
@@ -137,7 +147,7 @@ describe("DadChain Platform", function () {
 
     it("Should prevent a user from liking a joke twice", async function () {
       const { core, user1, user2 } = await loadFixture(deployContractsFixture);
-      await core.connect(user1).submitJoke("A joke");
+      await core.connect(user1).submitJoke("A joke", "ipfs://like-joke-uri");
       await core.connect(user2).likeJoke(1);
       await expect(core.connect(user2).likeJoke(1)).to.be.revertedWith(
         "Already liked"
@@ -148,7 +158,9 @@ describe("DadChain Platform", function () {
       const { core, usdc, user1, user2 } = await loadFixture(
         deployContractsFixture
       );
-      await core.connect(user1).submitJoke("A tip-worthy joke");
+      await core
+        .connect(user1)
+        .submitJoke("A tip-worthy joke", "ipfs://tip-joke-uri");
 
       const tipAmount = ethers.parseUnits("10", 6);
       await usdc.connect(user2).approve(await core.getAddress(), tipAmount);
@@ -188,7 +200,9 @@ describe("DadChain Platform", function () {
     it("Should return paginated jokes correctly", async function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
       for (let i = 0; i < 15; i++) {
-        await core.connect(user1).submitJoke(`Joke ${i}`);
+        await core
+          .connect(user1)
+          .submitJoke(`Joke ${i}`, `ipfs://joke-uri-${i}`);
       }
 
       // Get first page
@@ -208,7 +222,9 @@ describe("DadChain Platform", function () {
     it("Should handle pagination when pageSize is larger than available jokes", async function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
       for (let i = 0; i < 3; i++) {
-        await core.connect(user1).submitJoke(`Joke ${i}`);
+        await core
+          .connect(user1)
+          .submitJoke(`Joke ${i}`, `ipfs://small-batch-${i}`);
       }
 
       // Request 10 jokes, but only 3 exist
@@ -223,7 +239,9 @@ describe("DadChain Platform", function () {
     it("Should allow an eligible user to claim a badge", async function () {
       const { core, nft, user1 } = await loadFixture(deployContractsFixture);
       // User submits 1 joke to be eligible for badge 1
-      await core.connect(user1).submitJoke("First joke");
+      await core
+        .connect(user1)
+        .submitJoke("First joke", "ipfs://first-joke-uri");
 
       await expect(core.connect(user1).claimBadge(1))
         .to.emit(core, "BadgeClaimed")
@@ -242,7 +260,7 @@ describe("DadChain Platform", function () {
 
     it("Should prevent a user from claiming a badge twice", async function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
-      await core.connect(user1).submitJoke("A joke");
+      await core.connect(user1).submitJoke("A joke", "ipfs://a-joke-uri");
       await core.connect(user1).claimBadge(1);
       await expect(core.connect(user1).claimBadge(1)).to.be.revertedWith(
         "Badge already claimed"
@@ -252,7 +270,9 @@ describe("DadChain Platform", function () {
     it("Should mint the correct badge based on criteria", async function () {
       const { core, nft, user1 } = await loadFixture(deployContractsFixture);
       for (let i = 0; i < 10; i++) {
-        await core.connect(user1).submitJoke(`Joke #${i + 1}`);
+        await core
+          .connect(user1)
+          .submitJoke(`Joke #${i + 1}`, `ipfs://badge-joke-${i}`);
       }
       // User now has 10 jokes
       await core.connect(user1).claimBadge(1); // Bronze
@@ -263,13 +283,34 @@ describe("DadChain Platform", function () {
       expect(await nft.ownerOf(2)).to.equal(user1.address);
       expect(await nft.ownerOf(3)).to.equal(user1.address);
     });
+
+    it("Should correctly report if a user has claimed a badge", async function () {
+      const { core, user1 } = await loadFixture(deployContractsFixture);
+
+      // Initially, user has not claimed badge 1
+      expect(await core.hasUserClaimedBadge(user1.address, 1)).to.be.false;
+
+      // User submits a joke and claims the badge
+      await core
+        .connect(user1)
+        .submitJoke("A joke to claim a badge", "ipfs://badge-claim-test");
+      await core.connect(user1).claimBadge(1);
+
+      // Now, user should have claimed badge 1
+      expect(await core.hasUserClaimedBadge(user1.address, 1)).to.be.true;
+
+      // User has not claimed badge 2
+      expect(await core.hasUserClaimedBadge(user1.address, 2)).to.be.false;
+    });
   });
 
   describe("View Functions", function () {
     it("Should return paginated jokes correctly", async function () {
       const { core, user1 } = await loadFixture(deployContractsFixture);
       for (let i = 0; i < 15; i++) {
-        await core.connect(user1).submitJoke(`Joke ${i}`);
+        await core
+          .connect(user1)
+          .submitJoke(`Joke ${i}`, `ipfs://joke-uri-${i}`);
       }
 
       // Get first page

@@ -15,6 +15,7 @@ contract DadChainCore is Ownable {
         uint256 id;
         address creator;
         string content;
+        string imageURI; // URI untuk gambar lelucon (misalnya, IPFS)
         uint256 timestamp;
         uint256 likeCount;
         uint256 tipAmount; // Total USDC tipped
@@ -43,7 +44,7 @@ contract DadChainCore is Ownable {
 
     // === EVENTS ===
 
-    event JokeSubmitted(uint256 indexed jokeId, address indexed creator, string content);
+    event JokeSubmitted(uint256 indexed jokeId, address indexed creator, string content, string imageURI);
     event JokeLiked(uint256 indexed jokeId, address indexed liker);
     event JokeTipped(uint256 indexed jokeId, address indexed tipper, address indexed creator, uint256 amount);
     event BadgeClaimed(address indexed user, uint256 indexed badgeId);
@@ -56,7 +57,7 @@ contract DadChainCore is Ownable {
 
     // === MUTATIVE FUNCTIONS ===
 
-    function submitJoke(string memory _content) external {
+    function submitJoke(string memory _content, string memory _imageURI) external {
         _handleFirstInteraction(msg.sender);
 
         totalJokes++;
@@ -66,6 +67,7 @@ contract DadChainCore is Ownable {
             id: newJokeId,
             creator: msg.sender,
             content: _content,
+            imageURI: _imageURI,
             timestamp: block.timestamp,
             likeCount: 0,
             tipAmount: 0
@@ -73,7 +75,7 @@ contract DadChainCore is Ownable {
 
         userProfiles[msg.sender].jokeCount++;
 
-        emit JokeSubmitted(newJokeId, msg.sender, _content);
+        emit JokeSubmitted(newJokeId, msg.sender, _content, _imageURI);
     }
 
     function likeJoke(uint256 _jokeId) external {
@@ -177,6 +179,10 @@ contract DadChainCore is Ownable {
             hasInteracted[_user] = true;
             totalUsers++;
         }
+    }
+
+    function hasUserClaimedBadge(address _user, uint256 _badgeId) external view returns (bool) {
+        return userProfiles[_user].claimedBadges[_badgeId];
     }
 
     // === RESTRICTED FUNCTIONS ===
