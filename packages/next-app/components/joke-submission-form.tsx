@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, ImagePlus, X } from "lucide-react";
+import { useWriteContract } from "wagmi";
+import { dadChainCoreContract } from "@/lib/contracts";
 
 const MAX_JOKE_LENGTH = 280;
 
@@ -21,6 +23,7 @@ export function JokeSubmissionForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { writeContract } = useWriteContract();
 
   useEffect(() => {
     if (!imageFile) {
@@ -40,13 +43,32 @@ export function JokeSubmissionForm() {
     if (!joke.trim()) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    setJoke("");
-    setImageFile(null);
-    setIsSubmitting(false);
+    // Note: The current smart contract only supports text submissions.
+    // Image handling would require an off-chain storage solution like IPFS.
 
-    alert("Joke submitted to blockchain! ");
+    writeContract(
+      {
+        ...dadChainCoreContract,
+        functionName: "submitJoke",
+        args: [joke, ""], // Pass an empty string for _imageURI
+      },
+      {
+        onSuccess: (txHash) => {
+          console.log("Joke submission successful, txHash:", txHash);
+          alert("Joke submitted successfully!");
+          setJoke("");
+          setImageFile(null);
+          setIsSubmitting(false);
+          // Optional: Add a redirect or a more sophisticated success message.
+        },
+        onError: (error) => {
+          console.error("Error submitting joke:", error);
+          alert(`Submission failed: ${error.message}`);
+          setIsSubmitting(false);
+        },
+      }
+    );
   };
 
   return (

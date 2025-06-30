@@ -12,58 +12,157 @@ import { Button } from "@/components/ui/button";
 import { Heart, DollarSign, ExternalLink, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Identicon } from "./identicon";
+import {
+  useReadContract,
+  useWriteContract,
+  useAccount,
+  useWaitForTransactionReceipt,
+} from "wagmi";
+import { dadChainCoreContract, usdcContract } from "@/lib/contracts";
+import { formatUnits, parseUnits } from "viem";
 
-// Updated mock data with real Date objects
-const mockJokes = [
-  {
-    id: "1",
-    text: "Why don't scientists trust atoms? Because they make up everything!",
-    creator: "0x742d35Cc6634C0532925a3b8D404d3aABb8c4532",
-    likes: 42,
-    tips: 15.5,
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    txHash: "0xabc123...",
-    image: null,
-  },
-  {
-    id: "2",
-    text: "I told my wife she was drawing her eyebrows too high. She looked surprised.",
-    creator: "0x8ba1f109551bD432803012645Hac136c30C6213",
-    likes: 38,
-    tips: 8.2,
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    txHash: "0xdef456...",
-    image: null,
-  },
-  {
-    id: "3",
-    text: "What do you call a fake noodle? An impasta!",
-    creator: "0x1234567890abcdef1234567890abcdef12345678",
-    likes: 67,
-    tips: 23.1,
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    txHash: "0x789ghi...",
-    image: null,
-  },
-];
+// Define the structure of a formatted joke for use in the component
+interface FormattedJoke {
+  id: string;
+  text: string;
+  creator: string;
+  timestamp: Date;
+  likes: number;
+  totalTips: string;
+}
 
 export function TimelineFeed() {
-  const [likedJokes, setLikedJokes] = useState<Set<string>>(new Set());
+  const { address } = useAccount();
+  const [jokes, setJokes] = useState<FormattedJoke[]>([]);
+  const [isTipping, setIsTipping] = useState<string | null>(null); // Use joke ID to track tipping state
 
-  const handleLike = async (jokeId: string) => {
-    setLikedJokes((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(jokeId)) {
-        newSet.delete(jokeId);
-      } else {
-        newSet.add(jokeId);
+  // Fetch jokes using wagmi's useReadContract hook
+  const {
+    data: rawJokes,
+    isLoading,
+    isError,
+    refetch: refetchJokes, // Add refetch function
+  } = useReadContract({
+    ...dadChainCoreContract,
+    functionName: "getJokesPaginated",
+    args: [BigInt(0), BigInt(20)], // Use BigInt for contract arguments
+  });
+
+  // useWriteContract hook for liking a joke
+  const { writeContract } = useWriteContract();
+
+  useEffect(() => {
+    if (rawJokes) {
+      const formattedJokes = (rawJokes as any[])
+        .filter((joke: any) => joke.id > 0) // Filter out empty/placeholder jokes
+        .map((joke: any) => ({
+          id: joke.id.toString(),
+          text: joke.content,
+          creator: joke.creator,
+          timestamp: new Date(Number(joke.timestamp) * 1000), // Convert BigInt to Number then to Date
+          likes: Number(joke.likeCount),
+          totalTips: formatUnits(joke.tipAmount, 6), // Corrected: USDC has 6 decimals
+        }));
+      setJokes(formattedJokes);
+    }
+  }, [rawJokes]);
+
+  const handleLike = (jokeId: string) => {
+    if (!address) {
+      alert("Please connect your wallet to like a joke.");
+      return;
+    }
+
+    // Optimistic UI Update
+    setJokes((currentJokes) =>
+      currentJokes.map((j) =>
+        j.id === jokeId ? { ...j, likes: j.likes + 1 } : j
+      )
+    );
+
+    writeContract(
+      {
+        ...dadChainCoreContract,
+        functionName: "likeJoke",
+        args: [BigInt(jokeId)],
+      },
+      {
+        onSuccess: (txHash) => {
+          console.log("Like transaction sent:", txHash);
+          // You can use useWaitForTransactionReceipt for more robust UI updates
+        },
+        onError: (error) => {
+          console.error("Failed to like joke:", error);
+          alert(`Error liking joke: ${error.message}`);
+          // Revert optimistic update on error
+          setJokes((currentJokes) =>
+            currentJokes.map((j) =>
+              j.id === jokeId ? { ...j, likes: j.likes - 1 } : j
+            )
+          );
+        },
       }
-      return newSet;
-    });
+    );
   };
 
-  const handleTip = (creator: string) => {
-    alert(`Tipping ${creator} with USDC via MetaMask Card! 💳`);
+  const handleTip = async (jokeId: string) => {
+    if (!address) {
+      alert("Please connect your wallet to tip a joke.");
+      return;
+    }
+
+    const tipAmountStr = prompt("Enter amount in USDC to tip (e.g., 0.1):");
+    if (!tipAmountStr || isNaN(parseFloat(tipAmountStr))) {
+      alert("Invalid amount.");
+      return;
+    }
+
+    const tipAmount = parseUnits(tipAmountStr, 6); // USDC has 6 decimals
+
+    setIsTipping(jokeId);
+
+    // Step 1: Approve the DadChainCore contract to spend USDC
+    writeContract(
+      {
+        ...usdcContract,
+        functionName: "approve",
+        args: [dadChainCoreContract.address, tipAmount],
+      },
+      {
+        onSuccess: (approveTxHash) => {
+          console.log("USDC approval successful, tx hash:", approveTxHash);
+          // Step 2: Call the actual tipJoke function
+          // It's recommended to wait for the approval transaction to be mined
+          // For simplicity here, we proceed directly. For production, use useWaitForTransactionReceipt.
+          writeContract(
+            {
+              ...dadChainCoreContract,
+              functionName: "tipJoke",
+              args: [BigInt(jokeId), tipAmount],
+            },
+            {
+              onSuccess: (tipTxHash) => {
+                console.log("Tip successful, tx hash:", tipTxHash);
+                alert("Thank you for the tip!");
+                refetchJokes(); // Refetch jokes to show updated tip amount
+              },
+              onError: (error) => {
+                console.error("Tipping failed:", error);
+                alert(`Tipping failed: ${error.message}`);
+              },
+              onSettled: () => {
+                setIsTipping(null);
+              },
+            }
+          );
+        },
+        onError: (error) => {
+          console.error("USDC approval failed:", error);
+          alert(`USDC approval failed: ${error.message}`);
+          setIsTipping(null);
+        },
+      }
+    );
   };
 
   const copyAddress = (address: string) => {
@@ -77,89 +176,102 @@ export function TimelineFeed() {
         Fresh Jokes from the Chain
       </h2>
 
-      {mockJokes.map((joke) => (
-        <Card
-          key={joke.id}
-          className="border-orange-100 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <CardHeader className="flex flex-row items-start space-x-4 p-4">
-            <Identicon address={joke.creator} size={48} />
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-gray-900">
-                    {joke.creator.slice(0, 6)}...{joke.creator.slice(-4)}
-                  </span>
-                  <button
-                    onClick={() => copyAddress(joke.creator)}
-                    title="Copy address"
+      {isLoading && (
+        <p className="text-center text-gray-500 py-8">Loading jokes...</p>
+      )}
+      {isError && (
+        <p className="text-center text-red-500 py-8">
+          Failed to load jokes. Please try again.
+        </p>
+      )}
+      {!isLoading && !isError && jokes.length === 0 && (
+        <p className="text-center text-gray-500 py-8">
+          No jokes submitted yet. Be the first!
+        </p>
+      )}
+
+      {jokes.map((joke) => {
+        const isOwnJoke =
+          address && joke.creator.toLowerCase() === address.toLowerCase();
+
+        return (
+          <Card
+            key={joke.id}
+            className="border-orange-100 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <CardHeader className="flex flex-row items-start space-x-4 p-4">
+              <Identicon address={joke.creator} size={48} />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold text-gray-900">
+                      {joke.creator.slice(0, 6)}...{joke.creator.slice(-4)}
+                    </span>
+                    <button
+                      onClick={() => copyAddress(joke.creator)}
+                      title="Copy address"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-orange-600 transition-colors" />
+                    </button>
+                  </div>
+                  <a
+                    href={`https://sepolia.etherscan.io/address/${joke.creator}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
+                    title="View on Etherscan"
                   >
-                    <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-orange-600 transition-colors" />
-                  </button>
+                    <span>
+                      {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
+                    </span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
-                <a
-                  href={`https://etherscan.io/tx/${joke.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
-                  title="View on Etherscan"
+                <p className="text-sm text-gray-500">Verified Dad</p>
+              </div>
+            </CardHeader>
+
+            <CardContent className="px-4 pb-2">
+              <p className="text-gray-800 text-base mb-3 leading-relaxed">
+                {joke.text}
+              </p>
+            </CardContent>
+
+            <CardFooter className="flex justify-between items-center p-4 pt-0">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => handleLike(joke.id)}
+                  disabled={isOwnJoke}
+                  className="flex items-center space-x-1 text-gray-500 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>
-                    {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
-                  </span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                  <Heart className="w-5 h-5" />
+                  <span className="font-medium text-sm">{joke.likes}</span>
+                </button>
+                <button
+                  onClick={() => handleTip(joke.id)}
+                  disabled={isTipping === joke.id || isOwnJoke}
+                  className="flex items-center space-x-1 text-gray-500 hover:text-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <DollarSign className="w-5 h-5" />
+                  <span className="font-medium text-sm">{joke.totalTips}</span>
+                </button>
               </div>
-              <p className="text-sm text-gray-500">Verified Dad</p>
-            </div>
-          </CardHeader>
-
-          <CardContent className="px-4 pb-2">
-            <p className="text-gray-800 text-base mb-3 leading-relaxed">
-              {joke.text}
-            </p>
-            {joke.image && (
-              <div className="relative mb-3 aspect-video max-h-80 w-full overflow-hidden rounded-lg border">
-                <Image
-                  src={joke.image}
-                  alt="Joke meme"
-                  layout="fill"
-                  objectFit="contain"
-                />
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter className="flex justify-between items-center p-4 pt-0">
-            <div className="flex items-center space-x-5 text-gray-500">
-              <button
-                onClick={() => handleLike(joke.id)}
-                className={`flex items-center space-x-1.5 hover:text-red-500 transition-colors ${
-                  likedJokes.has(joke.id) ? "text-red-500" : ""
-                }`}
+              <a
+                href={`https://sepolia.etherscan.io/address/${joke.creator}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
+                title="View on Etherscan"
               >
-                <Heart
-                  className={`w-5 h-5 ${
-                    likedJokes.has(joke.id) ? "fill-current" : ""
-                  }`}
-                />
-                <span className="text-sm font-medium">
-                  {joke.likes + (likedJokes.has(joke.id) ? 1 : 0)}
+                <span>
+                  {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
                 </span>
-              </button>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTip(joke.creator)}
-              className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800 transition-colors"
-            >
-              <DollarSign className="w-4 h-4 mr-1.5" />
-              Tip USDC
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </CardFooter>
+          </Card>
+        );
+      })}
     </div>
   );
 }
