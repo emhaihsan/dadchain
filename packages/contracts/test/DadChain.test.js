@@ -233,6 +233,26 @@ describe("DadChain Platform", function () {
       expect(jokes[0].id).to.equal(3);
       expect(jokes[2].id).to.equal(1);
     });
+
+    it("Should return the correct jokes for a creator", async function () {
+      const { core, user1, user2 } = await loadFixture(deployContractsFixture);
+
+      // user1 submits two jokes
+      await core.connect(user1).submitJoke("First joke by user1", "");
+      await core.connect(user1).submitJoke("Second joke by user1", "");
+
+      // user2 submits one joke
+      await core.connect(user2).submitJoke("Joke by user2", "");
+
+      const user1Jokes = await core.getJokesByCreator(user1.address);
+      expect(user1Jokes.length).to.equal(2);
+      expect(user1Jokes[0]).to.equal(1);
+      expect(user1Jokes[1]).to.equal(2);
+
+      const user2Jokes = await core.getJokesByCreator(user2.address);
+      expect(user2Jokes.length).to.equal(1);
+      expect(user2Jokes[0]).to.equal(3);
+    });
   });
 
   describe("Badge Claiming", function () {

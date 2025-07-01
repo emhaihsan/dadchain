@@ -34,6 +34,7 @@ contract DadChainCore is Ownable {
     address public nftContractAddress;
 
     mapping(uint256 => Joke) public jokes;
+    mapping(address => uint256[]) public jokesByCreator;
     mapping(address => UserProfile) public userProfiles;
     mapping(uint256 => mapping(address => bool)) public hasLiked;
     mapping(address => bool) private hasInteracted;
@@ -63,7 +64,7 @@ contract DadChainCore is Ownable {
         totalJokes++;
         uint256 newJokeId = totalJokes;
 
-        jokes[newJokeId] = Joke({
+        Joke memory newJoke = Joke({
             id: newJokeId,
             creator: msg.sender,
             content: _content,
@@ -73,7 +74,11 @@ contract DadChainCore is Ownable {
             tipAmount: 0
         });
 
+        jokes[newJokeId] = newJoke;
         userProfiles[msg.sender].jokeCount++;
+        jokesByCreator[msg.sender].push(newJokeId);
+
+        _handleFirstInteraction(msg.sender);
 
         emit JokeSubmitted(newJokeId, msg.sender, _content, _imageURI);
     }
@@ -160,6 +165,15 @@ contract DadChainCore is Ownable {
         }
 
         return result;
+    }
+
+    /**
+     * @notice Gets all joke IDs submitted by a specific creator.
+     * @param _creator The address of the creator.
+     * @return An array of joke IDs.
+     */
+    function getJokesByCreator(address _creator) external view returns (uint256[] memory) {
+        return jokesByCreator[_creator];
     }
 
     /**

@@ -7,8 +7,9 @@ import "../src/DadJokesNFT.sol";
 
 contract DeployDadChain is Script {
     function run() external returns (DadChainCore, DadJokesNFT) {
-        // Alamat resmi USDC di Sepolia Testnet
-        address usdcSepolia = 0x1C7D4b196CB0C7B01d743fBc6116A902379c7a98;
+        // Alamat resmi USDC di Base Sepolia Testnet
+        address usdcSepolia = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+
         string memory baseURI = "ipfs://bafybeieh5yr4wff36kc7avoftmfspzmcr4juicjpnh64n6isb3tnx3qzpy/"; // Ganti dengan CID metadata Anda nanti
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
