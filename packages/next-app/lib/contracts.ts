@@ -23,7 +23,7 @@ const erc20Abi = [
  * The `as const` assertion ensures type safety with wagmi hooks.
  */
 export const dadChainCoreContract = {
-  address: '0xbe1dc08699eb5a690538023aaabe7ef6079f3092',
+  address: '0x5Ce9Be8630781ff9179D1d972D1341c1E832f5e2',
   abi: DadChainCoreABI,
 } as const;
 
@@ -33,11 +33,11 @@ export const dadChainCoreContract = {
  * The `as const` assertion ensures type safety with wagmi hooks.
  */
 export const dadJokesNFTContract = {
-  address: '0x3be38ecfdb3283a6de4e2af335e2bd054393647a',
+  address: '0x0871c553fed4E59BA8B53486522888A17f66946d',
   abi: DadJokesNFTABI,
 } as const;
 
 export const usdcContract = {
-  address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7a98',
+  address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
   abi: erc20Abi,
 } as const;

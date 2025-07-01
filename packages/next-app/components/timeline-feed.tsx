@@ -12,12 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Heart, DollarSign, ExternalLink, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Identicon } from "./identicon";
-import {
-  useReadContract,
-  useWriteContract,
-  useAccount,
-  useWaitForTransactionReceipt,
-} from "wagmi";
+import { useReadContract, useWriteContract, useAccount } from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { config } from "@/lib/Web3Provider";
 import { dadChainCoreContract, usdcContract } from "@/lib/contracts";
 import { formatUnits, parseUnits } from "viem";
 
@@ -35,6 +32,7 @@ export function TimelineFeed() {
   const { address } = useAccount();
   const [jokes, setJokes] = useState<FormattedJoke[]>([]);
   const [isTipping, setIsTipping] = useState<string | null>(null); // Use joke ID to track tipping state
+  const [tippingMessage, setTippingMessage] = useState<string>("");
 
   // Fetch jokes using wagmi's useReadContract hook
   const {
@@ -49,7 +47,7 @@ export function TimelineFeed() {
   });
 
   // useWriteContract hook for liking a joke
-  const { writeContract } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
 
   useEffect(() => {
     if (rawJokes) {
@@ -80,7 +78,7 @@ export function TimelineFeed() {
       )
     );
 
-    writeContract(
+    writeContractAsync(
       {
         ...dadChainCoreContract,
         functionName: "likeJoke",
@@ -110,59 +108,60 @@ export function TimelineFeed() {
       alert("Please connect your wallet to tip a joke.");
       return;
     }
+    if (isTipping) return; // Prevent multiple tips at once
 
     const tipAmountStr = prompt("Enter amount in USDC to tip (e.g., 0.1):");
-    if (!tipAmountStr || isNaN(parseFloat(tipAmountStr))) {
-      alert("Invalid amount.");
+    if (
+      !tipAmountStr ||
+      isNaN(parseFloat(tipAmountStr)) ||
+      parseFloat(tipAmountStr) <= 0
+    ) {
+      alert("Invalid or zero amount.");
       return;
     }
 
     const tipAmount = parseUnits(tipAmountStr, 6); // USDC has 6 decimals
 
     setIsTipping(jokeId);
-
-    // Step 1: Approve the DadChainCore contract to spend USDC
-    writeContract(
-      {
+    try {
+      // Step 1: Approve the DadChainCore contract to spend USDC
+      setTippingMessage("Waiting for approval...");
+      const approveTxHash = await writeContractAsync({
         ...usdcContract,
         functionName: "approve",
         args: [dadChainCoreContract.address, tipAmount],
-      },
-      {
-        onSuccess: (approveTxHash) => {
-          console.log("USDC approval successful, tx hash:", approveTxHash);
-          // Step 2: Call the actual tipJoke function
-          // It's recommended to wait for the approval transaction to be mined
-          // For simplicity here, we proceed directly. For production, use useWaitForTransactionReceipt.
-          writeContract(
-            {
-              ...dadChainCoreContract,
-              functionName: "tipJoke",
-              args: [BigInt(jokeId), tipAmount],
-            },
-            {
-              onSuccess: (tipTxHash) => {
-                console.log("Tip successful, tx hash:", tipTxHash);
-                alert("Thank you for the tip!");
-                refetchJokes(); // Refetch jokes to show updated tip amount
-              },
-              onError: (error) => {
-                console.error("Tipping failed:", error);
-                alert(`Tipping failed: ${error.message}`);
-              },
-              onSettled: () => {
-                setIsTipping(null);
-              },
-            }
-          );
-        },
-        onError: (error) => {
-          console.error("USDC approval failed:", error);
-          alert(`USDC approval failed: ${error.message}`);
-          setIsTipping(null);
-        },
-      }
-    );
+      });
+
+      // Step 2: Wait for the approval transaction to be mined
+      setTippingMessage("Processing approval...");
+      await waitForTransactionReceipt(config, {
+        hash: approveTxHash,
+      });
+
+      // Step 3: Call the actual tipJoke function
+      setTippingMessage("Sending tip...");
+      const tipTxHash = await writeContractAsync({
+        ...dadChainCoreContract,
+        functionName: "tipJoke",
+        args: [BigInt(jokeId), tipAmount],
+      });
+
+      // Step 4: Wait for the tip transaction to be mined
+      setTippingMessage("Finalizing tip...");
+      await waitForTransactionReceipt(config, {
+        hash: tipTxHash,
+      });
+
+      alert("Tip sent successfully!");
+      refetchJokes(); // Refresh the feed to show the new tip amount
+    } catch (error: any) {
+      console.error("Tipping failed:", error);
+      alert(`Tipping failed: ${error.shortMessage || error.message}`);
+    } finally {
+      // Reset state regardless of success or failure
+      setIsTipping(null);
+      setTippingMessage("");
+    }
   };
 
   const copyAddress = (address: string) => {
@@ -215,11 +214,11 @@ export function TimelineFeed() {
                     </button>
                   </div>
                   <a
-                    href={`https://sepolia.etherscan.io/address/${joke.creator}`}
+                    href={`https://sepolia.basescan.org/address/${joke.creator}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
-                    title="View on Etherscan"
+                    title="View on Basescan"
                   >
                     <span>
                       {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
@@ -256,18 +255,11 @@ export function TimelineFeed() {
                   <span className="font-medium text-sm">{joke.totalTips}</span>
                 </button>
               </div>
-              <a
-                href={`https://sepolia.etherscan.io/address/${joke.creator}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
-                title="View on Etherscan"
-              >
-                <span>
-                  {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
-                </span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              {isTipping === joke.id && tippingMessage && (
+                <p className="text-sm text-blue-600 ml-4 animate-pulse">
+                  {tippingMessage}
+                </p>
+              )}
             </CardFooter>
           </Card>
         );
