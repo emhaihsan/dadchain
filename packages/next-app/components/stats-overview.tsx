@@ -1,31 +1,50 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MessageSquare, DollarSign, Award } from "lucide-react";
+import { Users, MessageSquare, DollarSign, Heart } from "lucide-react";
 
-export function StatsOverview() {
+interface StatsOverviewProps {
+  totalJokes: number;
+  totalTips: number;
+  totalUsers: number;
+  totalLikes: number;
+}
+
+export function StatsOverview({
+  totalJokes,
+  totalTips,
+  totalUsers,
+  totalLikes,
+}: StatsOverviewProps) {
   const stats = [
     {
       title: "Total Jokes",
-      value: "1,247",
+      value: totalJokes.toLocaleString(),
       icon: MessageSquare,
       color: "text-orange-600",
+      description: "All jokes submitted on-chain.",
+    },
+    {
+      title: "Total Likes",
+      value: totalLikes.toLocaleString(),
+      icon: Heart,
+      color: "text-red-600",
+      description: "Total likes across all jokes.",
     },
     {
       title: "USDC Tips",
-      value: "$2,341",
+      value: `$${totalTips.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
       icon: DollarSign,
       color: "text-green-600",
+      description: "Total USDC tipped to creators.",
     },
     {
       title: "Active Dads",
-      value: "892",
+      value: totalUsers.toLocaleString(),
       icon: Users,
       color: "text-purple-600",
-    },
-    {
-      title: "NFT Badges",
-      value: "156",
-      icon: Award,
-      color: "text-blue-600",
+      description: "Total unique participating users.",
     },
   ];
 
@@ -46,9 +65,7 @@ export function StatsOverview() {
             <div className={`text-3xl font-bold ${stat.color}`}>
               {stat.value}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
+            <p className="text-xs text-muted-foreground">{stat.description}</p>
           </CardContent>
         </Card>
       ))}

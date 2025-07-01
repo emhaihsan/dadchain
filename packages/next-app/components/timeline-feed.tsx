@@ -17,6 +17,8 @@ import { waitForTransactionReceipt } from "wagmi/actions";
 import { config } from "@/lib/Web3Provider";
 import { dadChainCoreContract, usdcContract } from "@/lib/contracts";
 import { formatUnits, parseUnits } from "viem";
+import { usePublicClient } from "wagmi";
+import { parseAbiItem } from "viem";
 
 // Define the structure of a formatted joke for use in the component
 interface FormattedJoke {
@@ -28,6 +30,67 @@ interface FormattedJoke {
   totalTips: string;
   imageURI?: string;
 }
+
+// Komponen untuk mengambil dan menampilkan link transaksi
+const JokeTransactionLink = ({ jokeId }: { jokeId: number }) => {
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const publicClient = usePublicClient();
+
+  useEffect(() => {
+    const fetchTxHash = async () => {
+      if (!publicClient || !jokeId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const logs = await publicClient.getLogs({
+          address: dadChainCoreContract.address as `0x${string}`,
+          event: parseAbiItem(
+            "event JokeSubmitted(uint256 indexed jokeId, address indexed creator, string content, string imageURI)"
+          ),
+          args: {
+            jokeId: BigInt(jokeId),
+          },
+          fromBlock: "earliest", // Sebaiknya diganti dengan block deploy contract jika diketahui
+          toBlock: "latest",
+        });
+
+        if (logs.length > 0 && logs[0].transactionHash) {
+          setTxHash(logs[0].transactionHash);
+        }
+      } catch (error) {
+        console.error("Failed to fetch transaction hash:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTxHash();
+  }, [publicClient, jokeId]);
+
+  if (isLoading) {
+    return <span className="text-xs text-gray-400">Loading tx...</span>;
+  }
+
+  if (!txHash) {
+    return null; // Tidak menampilkan apa-apa jika tx tidak ditemukan
+  }
+
+  return (
+    <a
+      href={`https://sepolia.basescan.org/tx/${txHash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center space-x-1 text-xs text-blue-500 hover:underline"
+      title="View transaction on Basescan"
+    >
+      <span>View Transaction</span>
+      <ExternalLink className="w-3 h-3" />
+    </a>
+  );
+};
 
 export function TimelineFeed() {
   const { address } = useAccount();
@@ -215,20 +278,11 @@ export function TimelineFeed() {
                       <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-orange-600 transition-colors" />
                     </button>
                   </div>
-                  <a
-                    href={`https://sepolia.basescan.org/address/${joke.creator}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-500 hover:underline flex items-center space-x-1"
-                    title="View on Basescan"
-                  >
-                    <span>
-                      {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
-                    </span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+
+                  <span>
+                    {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-500">Verified Dad</p>
               </div>
             </CardHeader>
 
@@ -269,11 +323,8 @@ export function TimelineFeed() {
                   <span className="font-medium text-sm">{joke.totalTips}</span>
                 </button>
               </div>
-              {isTipping === joke.id && tippingMessage && (
-                <p className="text-sm text-blue-600 ml-4 animate-pulse">
-                  {tippingMessage}
-                </p>
-              )}
+
+              <JokeTransactionLink jokeId={Number(joke.id)} />
             </CardFooter>
           </Card>
         );
