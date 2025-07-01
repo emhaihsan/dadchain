@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { dadChainCoreContract } from "@/lib/contracts";
 import { BadgeCard } from "@/components/badge-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Identicon } from "@/components/identicon";
 import { Button } from "@/components/ui/button";
 import { Copy, Heart, MessageSquare, DollarSign, Loader2 } from "lucide-react";
@@ -147,42 +146,24 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Tabs for Jokes and Badges */}
-        <Tabs defaultValue="badges" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="jokes">My Jokes</TabsTrigger>
-            <TabsTrigger value="badges">My Badges</TabsTrigger>
-          </TabsList>
-          <TabsContent value="jokes" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>My Jokes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  This section is under construction. Your awesome jokes will
-                  appear here soon!
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="badges" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {badges.map((badge) => (
-                <BadgeCard
-                  key={badge.id}
-                  id={badge.id}
-                  name={badge.name}
-                  description={badge.description}
-                  image={badge.image}
-                  requiredJokeCount={badge.requiredJokeCount}
-                  userJokeCount={Number(jokesCount)}
-                  onSuccess={() => setRefreshTrigger((prev) => prev + 1)}
-                />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Badges Section */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold tracking-tight mb-4">My Badges</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {badges.map((badge) => (
+              <BadgeCard
+                key={badge.id}
+                id={badge.id}
+                name={badge.name}
+                description={badge.description}
+                image={badge.image}
+                requiredJokeCount={badge.requiredJokeCount}
+                userJokeCount={Number(jokesCount)}
+                onSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+              />
+            ))}
+          </div>
+        </div>
       </motion.div>
     </div>
   );
