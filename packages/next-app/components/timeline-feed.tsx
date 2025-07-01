@@ -26,6 +26,7 @@ interface FormattedJoke {
   timestamp: Date;
   likes: number;
   totalTips: string;
+  imageURI?: string;
 }
 
 export function TimelineFeed() {
@@ -60,6 +61,7 @@ export function TimelineFeed() {
           timestamp: new Date(Number(joke.timestamp) * 1000), // Convert BigInt to Number then to Date
           likes: Number(joke.likeCount),
           totalTips: formatUnits(joke.tipAmount, 6), // Corrected: USDC has 6 decimals
+          imageURI: joke.imageURI,
         }));
       setJokes(formattedJokes);
     }
@@ -234,6 +236,18 @@ export function TimelineFeed() {
               <p className="text-gray-800 text-base mb-3 leading-relaxed">
                 {joke.text}
               </p>
+              {joke.imageURI && joke.imageURI.startsWith("ipfs://") && (
+                <div className="mt-4 relative aspect-video">
+                  <Image
+                    src={joke.imageURI.replace(
+                      "ipfs://",
+                      "https://gateway.pinata.cloud/ipfs/"
+                    )}
+                    alt={`Image for joke ${joke.id}`}
+                    layout="fill"
+                  />
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="flex justify-between items-center p-4 pt-0">

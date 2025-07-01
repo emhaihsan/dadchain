@@ -12,14 +12,7 @@ const queryClient = new QueryClient();
 // 2. Create a Wagmi config
 export const config = createConfig({
   chains: [baseSepolia],
-  connectors: [
-    metaMask({
-      dappMetadata: {
-        name: "DadJokes DApp",
-        url: typeof window !== "undefined" ? window.location.host : "",
-      },
-    }),
-  ],
+  connectors: [metaMask()],
   transports: {
     [baseSepolia.id]: http(),
   },

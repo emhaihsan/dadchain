@@ -23,7 +23,8 @@ export function JokeSubmissionForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { writeContract } = useWriteContract();
+  const [isUploading, setIsUploading] = useState(false);
+  const { writeContractAsync } = useWriteContract();
 
   useEffect(() => {
     if (!imageFile) {
@@ -43,32 +44,47 @@ export function JokeSubmissionForm() {
     if (!joke.trim()) return;
 
     setIsSubmitting(true);
+    let imageUri = "";
 
-    // Note: The current smart contract only supports text submissions.
-    // Image handling would require an off-chain storage solution like IPFS.
+    try {
+      // Step 1: Upload image via our API route if it exists
+      if (imageFile) {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", imageFile);
 
-    writeContract(
-      {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+        setIsUploading(false);
+
+        if (!result.success) {
+          throw new Error(result.message || "Image upload failed");
+        }
+        imageUri = `ipfs://${result.ipfsHash}`;
+      }
+
+      // Step 2: Submit joke and image URI to the smart contract
+      await writeContractAsync({
         ...dadChainCoreContract,
         functionName: "submitJoke",
-        args: [joke, ""], // Pass an empty string for _imageURI
-      },
-      {
-        onSuccess: (txHash) => {
-          console.log("Joke submission successful, txHash:", txHash);
-          alert("Joke submitted successfully!");
-          setJoke("");
-          setImageFile(null);
-          setIsSubmitting(false);
-          // Optional: Add a redirect or a more sophisticated success message.
-        },
-        onError: (error) => {
-          console.error("Error submitting joke:", error);
-          alert(`Submission failed: ${error.message}`);
-          setIsSubmitting(false);
-        },
-      }
-    );
+        args: [joke, imageUri],
+      });
+
+      // Step 3: Handle success
+      alert("Joke submitted successfully!");
+      setJoke("");
+      setImageFile(null);
+    } catch (error: any) {
+      console.error("Error submitting joke:", error);
+      alert(`Submission failed: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -133,10 +149,15 @@ export function JokeSubmissionForm() {
 
           <Button
             type="submit"
-            disabled={!joke.trim() || isSubmitting}
+            disabled={!joke.trim() || isSubmitting || isUploading}
             className="w-full bg-orange-600 hover:bg-orange-700 transition-all duration-300 transform hover:scale-105"
           >
-            {isSubmitting ? (
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Uploading Image...
+              </>
+            ) : isSubmitting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 Submitting to Blockchain...
