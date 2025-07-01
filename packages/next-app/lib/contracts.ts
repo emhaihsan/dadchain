@@ -1,43 +1,35 @@
-import DadChainCoreABI from '@/lib/abi/DadChainCore.json';
-import DadJokesNFTABI from '@/lib/abi/DadJokesNFT.json';
+import { erc20Abi } from 'viem';
+import DadChainCore from './abi/DadChainCore.json';
+import DadJokesNFT from './abi/DadJokesNFT.json';
 
-// Minimal ERC20 ABI for the 'approve' function
-const erc20Abi = [
-  {
-    "constant": false,
-    "inputs": [
-      { "name": "spender", "type": "address" },
-      { "name": "value", "type": "uint256" }
-    ],
-    "name": "approve",
-    "outputs": [
-      { "name": "", "type": "bool" }
-    ],
-    "type": "function"
-  }
-] as const;
+// --- Contract Addresses ---
+// Addresses are sourced from environment variables with fallbacks for local development.
+const CORE_CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CORE_CONTRACT_ADDRESS || '0x5Ce9Be8630781ff9179D1d972D1341c1E832f5e2') as `0x${string}`;
+const NFT_CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS || '0x0871c553fed4E59BA8B53486522888A17f66946d') as `0x${string}`;
+const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x036CbD53842c5426634e7929541eC2318f3dCF7e') as `0x${string}`;
+
+// --- Contract Configurations ---
 
 /**
  * Configuration for the DadChainCore smart contract.
- * Includes the contract address and ABI.
- * The `as const` assertion ensures type safety with wagmi hooks.
  */
 export const dadChainCoreContract = {
-  address: '0x5Ce9Be8630781ff9179D1d972D1341c1E832f5e2',
-  abi: DadChainCoreABI,
+  address: CORE_CONTRACT_ADDRESS,
+  abi: DadChainCore,
 } as const;
 
 /**
  * Configuration for the DadJokesNFT smart contract.
- * Includes the contract address and ABI.
- * The `as const` assertion ensures type safety with wagmi hooks.
  */
-export const dadJokesNFTContract = {
-  address: '0x0871c553fed4E59BA8B53486522888A17f66946d',
-  abi: DadJokesNFTABI,
+export const dadJokesNftContract = {
+  address: NFT_CONTRACT_ADDRESS,
+  abi: DadJokesNFT,
 } as const;
 
+/**
+ * Configuration for the mock USDC smart contract.
+ */
 export const usdcContract = {
-  address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+  address: USDC_ADDRESS,
   abi: erc20Abi,
 } as const;
