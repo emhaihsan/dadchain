@@ -3,6 +3,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Web3Provider } from "@/lib/Web3Provider";
+import { Header } from "@/components/header";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -34,7 +35,10 @@ export default function RootLayout({
         )}
         suppressHydrationWarning={true}
       >
-        <Web3Provider>{children}</Web3Provider>
+        <Web3Provider>
+          <Header />
+          {children}
+        </Web3Provider>
       </body>
     </html>
   );

@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Identicon } from "@/components/identicon";
-import { Header } from "@/components/header";
+
 import {
   Heart,
   MessageSquare,
@@ -121,7 +121,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
-      <Header />
       <motion.main
         className="container mx-auto max-w-5xl px-4 py-10"
         variants={containerVariants}

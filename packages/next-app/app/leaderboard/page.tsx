@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -195,7 +194,6 @@ function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       <motion.main
         className="container mx-auto max-w-5xl px-4 py-10"
         variants={containerVariants}

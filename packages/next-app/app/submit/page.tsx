@@ -1,9 +1,7 @@
 "use client";
 
 import { useAccount } from "wagmi";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { motion } from "framer-motion";
 import { JokeSubmissionForm } from "@/components/joke-submission-form";
@@ -13,7 +11,6 @@ export default function SubmitJokePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       <motion.main
         className="container mx-auto max-w-2xl px-4 py-10"
         initial={{ opacity: 0, y: 20 }}

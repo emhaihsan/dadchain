@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/header";
 import { TimelineFeed } from "@/components/timeline-feed";
 import { Info } from "lucide-react";
 import { motion } from "framer-motion";
@@ -29,7 +28,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       <motion.div
         className="container mx-auto max-w-4xl px-4 py-10"
         variants={containerVariants}
