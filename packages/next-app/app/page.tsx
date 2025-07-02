@@ -1,8 +1,37 @@
 "use client";
 
-import { TimelineFeed } from "@/components/timeline-feed";
-import { Info, MessageSquare, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Zap, Gift, Users } from "lucide-react";
+import { TimelineFeed } from "@/components/timeline-feed";
+import { MessageSquare } from "lucide-react";
+import jokes from "../jokes.json";
+
+function RandomJoke() {
+  const [joke, setJoke] = useState("");
+
+  const getNewJoke = () => {
+    const randomIndex = Math.floor(Math.random() * jokes.length);
+    setJoke(jokes[randomIndex]);
+  };
+
+  useEffect(() => {
+    getNewJoke();
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6, duration: 0.5 }}
+      className="text-center mb-12 p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-white/20 shadow-sm relative overflow-hidden"
+    >
+      <p className="text-lg italic text-gray-700">"{joke}"</p>
+    </motion.div>
+  );
+}
 
 export default function Home() {
   const containerVariants = {
@@ -47,6 +76,8 @@ export default function Home() {
           </h1>
         </motion.div>
 
+        <RandomJoke />
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div className="md:col-span-2" variants={itemVariants}>
             <TimelineFeed />
@@ -57,7 +88,7 @@ export default function Home() {
               <p className="text-gray-600 mb-4">
                 DadChain is decentralized platform for dad jokes on the
                 blockchain. Submit your best dad jokes, earn likes, and get
-                tipped in crypto!
+                tipped in USDC!
               </p>
               <p className="text-gray-600">
                 Connect your wallet to submit jokes and participate in the
