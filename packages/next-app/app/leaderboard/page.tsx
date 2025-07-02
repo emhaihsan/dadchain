@@ -45,10 +45,10 @@ function LeaderboardTable({ data }: { data: LeaderboardEntry[] }) {
   const { address: currentUserAddress } = useAccount();
 
   return (
-    <Card>
+    <Card className="backdrop-blur-lg bg-white/70 border border-white/20 shadow-lg rounded-xl overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-b border-gray-100/50 bg-white/50">
             <TableHead className="w-16 text-center">Rank</TableHead>
             <TableHead>User</TableHead>
             <TableHead className="text-right">Jokes</TableHead>
@@ -63,8 +63,8 @@ function LeaderboardTable({ data }: { data: LeaderboardEntry[] }) {
               key={user.address}
               className={
                 user.address.toLowerCase() === currentUserAddress?.toLowerCase()
-                  ? "bg-orange-50"
-                  : ""
+                  ? "bg-gradient-to-r from-orange-50/50 to-purple-50/50"
+                  : "hover:bg-white/40 transition-colors"
               }
             >
               <TableCell className="font-medium text-center">
@@ -72,13 +72,36 @@ function LeaderboardTable({ data }: { data: LeaderboardEntry[] }) {
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-3">
-                  <Identicon address={user.address} size={40} />
+                  <div className="relative">
+                    <Identicon address={user.address} size={40} />
+                    {index < 3 && (
+                      <div
+                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                          index === 0
+                            ? "bg-yellow-400"
+                            : index === 1
+                            ? "bg-slate-300"
+                            : "bg-amber-600"
+                        }`}
+                      ></div>
+                    )}
+                  </div>
                   <div>
-                    <div className="font-medium text-gray-800">
+                    <div
+                      className={`font-medium ${
+                        index < 3
+                          ? "bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-purple-600"
+                          : "text-gray-800"
+                      }`}
+                    >
                       {user.address.slice(0, 6)}...{user.address.slice(-4)}
                     </div>
                     <div className="text-sm text-gray-500">
-                      Dad Extraordinaire
+                      {index === 0
+                        ? "Legendary Dad"
+                        : index < 3
+                        ? "Elite Dad"
+                        : "Dad Extraordinaire"}
                     </div>
                   </div>
                 </div>
@@ -92,7 +115,7 @@ function LeaderboardTable({ data }: { data: LeaderboardEntry[] }) {
               <TableCell className="text-right font-mono">
                 {user.tips.toFixed(2)}
               </TableCell>
-              <TableCell className="text-right font-bold text-orange-600">
+              <TableCell className="text-right font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-purple-600">
                 {user.dadScore.toLocaleString()}
               </TableCell>
             </TableRow>
@@ -202,13 +225,30 @@ function LeaderboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute top-10 left-10 w-64 h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 right-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
       <motion.main
-        className="container mx-auto max-w-5xl px-4 py-10"
+        className="container mx-auto max-w-5xl px-4 py-10 relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
+        <motion.div variants={itemVariants} className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-purple-600 mb-4">
+            DadChain Leaderboard
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            The ultimate ranking of dad joke masters. Who will be crowned the
+            king of dad jokes?
+          </p>
+        </motion.div>
+
         <motion.div variants={itemVariants}>
           <StatsOverview
             totalJokes={totalJokes}
@@ -219,13 +259,13 @@ function LeaderboardPage() {
         </motion.div>
 
         <motion.div variants={itemVariants} className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold tracking-tight">
+          <Card className="backdrop-blur-lg bg-white/70 border border-white/20 shadow-lg rounded-xl overflow-hidden">
+            <CardHeader className="border-b border-gray-100/50 bg-gradient-to-r from-orange-50/50 to-purple-50/50">
+              <CardTitle className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-purple-600">
                 All-Time Leaderboard
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
@@ -249,6 +289,32 @@ function LeaderboardPage() {
           </Card>
         </motion.div>
       </motion.main>
+
+      <style jsx global>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   );
 }

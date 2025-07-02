@@ -261,37 +261,41 @@ export function TimelineFeed() {
         return (
           <Card
             key={joke.id}
-            className="border-orange-100 shadow-sm transition-shadow hover:shadow-md"
+            className="backdrop-blur-lg bg-white/70 border border-white/20 shadow-lg mb-6 rounded-xl overflow-hidden transition-all hover:shadow-xl hover:bg-white/80"
           >
-            <CardHeader className="flex flex-row items-start space-x-4 p-4">
-              <Identicon address={joke.creator} size={48} />
+            <CardHeader className="flex flex-row items-start space-x-4 p-4 border-b border-gray-100/50">
+              <div className="relative">
+                <Identicon address={joke.creator} size={48} />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+              </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-gray-900 bg-gradient-to-r from-orange-600 to-purple-600 bg-clip-text text-transparent">
                       {joke.creator.slice(0, 6)}...{joke.creator.slice(-4)}
                     </span>
                     <button
                       onClick={() => copyAddress(joke.creator)}
                       title="Copy address"
+                      className="group"
                     >
-                      <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-orange-600 transition-colors" />
+                      <Copy className="w-3.5 h-3.5 text-gray-400 group-hover:text-orange-600 transition-colors" />
                     </button>
                   </div>
 
-                  <span>
+                  <span className="text-sm text-gray-500 bg-gray-100/50 px-2 py-0.5 rounded-full">
                     {formatDistanceToNow(joke.timestamp, { addSuffix: true })}
                   </span>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="px-4 pb-2">
+            <CardContent className="px-6 py-4">
               <p className="text-gray-800 text-base mb-3 leading-relaxed">
                 {joke.text}
               </p>
               {joke.imageURI && joke.imageURI.startsWith("ipfs://") && (
-                <div className="mt-4 relative aspect-video">
+                <div className="mt-4 relative aspect-video rounded-lg overflow-hidden border border-gray-100/50">
                   <Image
                     src={joke.imageURI.replace(
                       "ipfs://",
@@ -299,27 +303,44 @@ export function TimelineFeed() {
                     )}
                     alt={`Image for joke ${joke.id}`}
                     layout="fill"
+                    className="object-cover"
                   />
                 </div>
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center p-4 pt-0">
+            <CardFooter className="flex justify-between items-center p-4 pt-0 border-t border-gray-100/50 mt-2">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => handleLike(joke.id)}
                   disabled={isOwnJoke}
-                  className="flex items-center space-x-1 text-gray-500 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex items-center space-x-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isOwnJoke
+                      ? "text-gray-400"
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
                 >
-                  <Heart className="w-5 h-5" />
+                  <Heart
+                    className={`w-5 h-5 ${
+                      isTipping === joke.id ? "animate-pulse" : ""
+                    }`}
+                  />
                   <span className="font-medium text-sm">{joke.likes}</span>
                 </button>
                 <button
                   onClick={() => handleTip(joke.id)}
                   disabled={isTipping === joke.id || isOwnJoke}
-                  className="flex items-center space-x-1 text-gray-500 hover:text-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex items-center space-x-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isOwnJoke || isTipping === joke.id
+                      ? "text-gray-400"
+                      : "text-gray-500 hover:text-green-500"
+                  }`}
                 >
-                  <DollarSign className="w-5 h-5" />
+                  <DollarSign
+                    className={`w-5 h-5 ${
+                      isTipping === joke.id ? "animate-pulse" : ""
+                    }`}
+                  />
                   <span className="font-medium text-sm">{joke.totalTips}</span>
                 </button>
               </div>

@@ -22,25 +22,31 @@ export function Header() {
   }, []);
 
   return (
-    <header className="bg-white border-b border-orange-200 sticky top-0 z-50">
+    <header className="backdrop-blur-lg bg-white/80 border-b border-white/20 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="relative flex h-24 items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src="/dadchain.png"
-              alt="DadChain Logo"
-              width={64}
-              height={64}
-            />
+          <Link
+            href="/"
+            className="flex items-center space-x-2 transition-transform hover:scale-105"
+          >
+            <div className="relative">
+              <Image
+                src="/dadchain.png"
+                alt="DadChain Logo"
+                width={64}
+                height={64}
+                className="relative"
+              />
+            </div>
           </Link>
 
           {/* Centered Navigation with Absolute Positioning */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {isClient && (
-              <nav className="hidden md:flex items-center space-x-4">
+              <nav className="hidden md:flex items-center space-x-6">
                 <Link
                   href="/"
-                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  className="text-gray-700 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-600 hover:to-purple-600 font-medium transition-colors"
                 >
                   Home
                 </Link>
@@ -53,7 +59,7 @@ export function Header() {
                 >
                   <Button
                     size="lg"
-                    className="rounded-full font-bold shadow-lg bg-orange-500 hover:bg-orange-600 text-white transition-all duration-300 transform hover:scale-105"
+                    className="rounded-full font-bold shadow-lg bg-gradient-to-r from-orange-500 to-purple-500 hover:from-orange-600 hover:to-purple-600 text-white border border-white/20 transition-all duration-300 transform hover:scale-105"
                     disabled={!isConnected}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
@@ -63,7 +69,7 @@ export function Header() {
 
                 <Link
                   href="/leaderboard"
-                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  className="text-gray-700 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-orange-600 hover:to-purple-600 font-medium transition-colors"
                 >
                   Leaderboard
                 </Link>
