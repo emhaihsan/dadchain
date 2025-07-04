@@ -295,15 +295,15 @@ export function TimelineFeed() {
                 {joke.text}
               </p>
               {joke.imageURI && joke.imageURI.startsWith("ipfs://") && (
-                <div className="mt-4 relative aspect-video rounded-lg overflow-hidden border border-gray-100/50">
+                <div className="mt-4 relative aspect-video rounded-lg overflow-hidden border border-gray-100/50 bg-gray-50 flex items-center justify-center">
                   <Image
                     src={joke.imageURI.replace(
                       "ipfs://",
                       "https://gateway.pinata.cloud/ipfs/"
                     )}
                     alt={`Image for joke ${joke.id}`}
-                    layout="fill"
-                    className="object-cover"
+                    fill
+                    className="object-contain"
                   />
                 </div>
               )}
